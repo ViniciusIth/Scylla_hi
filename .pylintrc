@@ -1,0 +1,47 @@
+[MASTER]
+disable =
+	C0114, # missing-module-docstring
+	C0115, # missing-class-docstring
+	C0116, # missing-function-docstring
+
+[BASIC]
+argument-naming-style=snake_case
+
+attr-naming-style=snake_case
+
+variable-naming-style=snake_case
+
+const-naming-style=UPPER_CASE
+
+function-naming-style=camelCase
+
+method-naming-style=camelCase
+
+class-attribute-naming-style=snake_case
+
+class-naming-style=PascalCase
+
+module-naming-style=snake_case
+
+[FORMAT]
+
+# String used as indentation unit. This is usually "    " (4 spaces) or "\t" (1tab).
+indent-string = '\t'
+
+# Regexp for a line that is allowed to be longer than the limit.
+ignore-long-lines=^\s*(# )?<?https?://\S+>?$
+
+max-line-length=120
+
+[MISCELLANEOUS]
+
+# List of note tags to take in consideration, separated by a comma.
+notes =
+	FIXME,
+	XXX,
+	TODO
+
+[REPORTS]
+
+# Activate the evaluation score.
+score=yes
