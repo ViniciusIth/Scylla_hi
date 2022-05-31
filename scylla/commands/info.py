@@ -1,4 +1,4 @@
-import typing
+import member_functions as mf
 import lightbulb
 import hikari
 
@@ -17,38 +17,15 @@ async def cmdMember(ctx: lightbulb.Context, member: hikari.Member = None) -> Non
 		ctx.get_guild(), ctx.options.member or member
 	)
 
-	roles_list = getRolesSorted(member)
+	roles_list = [role.mention for role in mf.getRolesSorted(member)]
 	mention = ', '.join(roles_list) or '```O usuário não possui cargos.```'
 
-	presence = member.get_presence()
+	presence = mf.getActivityStatus(member)
 
-	if presence is not None:
-		if len(presence.activities) != 0:
-			activity, status = (presence.activities[0], presence.visible_status)
-			match activity.type:
-				# case isinstance(activity, hikari.ActivityType.CUSTOM):
-				# activity = activity
-				case hikari.ActivityType.PLAYING:
-					action = f'Jogando: {activity}'
-				case hikari.ActivityType.STREAMING:
-					action = f'Streamando: {activity}'
-				case hikari.ActivityType.LISTENING:
-					action = f'Ouvindo: {activity.details} - {activity.name}'
-		else:
-			action, status = (
-				' ~ ~ Aparentemente, o usuário não está fazendo nada ~ ~ ',
-				presence.visible_status,
-			)
-	else:
-		action, status = (
-			' ~ ~ Aparentemente, o usuário não está fazendo nada ~ ~ ',
-			'Offline',
-		)
-
-	permission = [
+	permission_list = [
 		f'✅ {permission.name}' for permission in member.get_top_role().permissions
 	]
-	permission = '\n'.join(permission)
+	permissions = '\n'.join(permission_list)
 
 	message = hikari.Embed(title='Informações do usuário')
 	message.set_thumbnail(user.avatar_url)
@@ -56,10 +33,10 @@ async def cmdMember(ctx: lightbulb.Context, member: hikari.Member = None) -> Non
 	message.add_field(name='ID', value=f'```{user.id}```')
 	message.add_field(name=f'Cargos [{len(roles_list)}]', value=mention, inline=False)
 	message.add_field(name='Nickname', value=f'```{member.nickname}```')
-	message.add_field(name='Status', value=f'```{status}```')
-	message.add_field(name='Atividade', value=f'```{action}```', inline=False)
+	message.add_field(name='Status', value=f'```{presence["status"]}```')
+	message.add_field(name='Atividade', value=f'```{presence["activity"]}```', inline=False)
 	message.add_field(
-		name='Permissões Globais', value=f'```{permission}```', inline=False
+		name='Permissões Globais', value=f'```{permissions}```', inline=False
 	)
 	message.add_field(
 		name='Registrado em',
@@ -74,9 +51,7 @@ async def cmdMember(ctx: lightbulb.Context, member: hikari.Member = None) -> Non
 
 
 @cmdMember.child()
-@lightbulb.option(
-	name='user', description='O usuário que terá sua imagem exposta.', type=hikari.User
-)
+@lightbulb.option(name='user', description='O usuário que terá sua imagem exposta.', type=hikari.User)
 @lightbulb.command('avatar', 'Pega a image de perfil um usuário.')
 @lightbulb.implements(lightbulb.PrefixSubCommand, lightbulb.SlashSubCommand)
 async def memberAvatar(ctx: lightbulb.Context, user: hikari.User = None) -> None:
@@ -98,34 +73,11 @@ async def memberAvatar(ctx: lightbulb.Context, user: hikari.User = None) -> None
 async def memberActivity(ctx: lightbulb.Context, member: hikari.User = lightbulb.Context.member) -> None:
 	member: hikari.Member = ctx.options.member or member
 
-	presence = member.get_presence()
-
-	if presence is not None:
-		if len(presence.activities) != 0:
-			activity, status = (presence.activities[0], presence.visible_status)
-			match activity.type:
-				# case isinstance(activity, hikari.ActivityType.CUSTOM):
-				# activity = activity
-				case hikari.ActivityType.PLAYING:
-					activity = f'Jogando: {activity}'
-				case hikari.ActivityType.STREAMING:
-					activity = f'Streamando: {activity}'
-				case hikari.ActivityType.LISTENING:
-					activity = f'Ouvindo: {activity.details} - {activity.name}'
-		else:
-			activity, status = (
-				' ~ ~ Aparentemente, o usuário não está fazendo nada ~ ~ ',
-				presence.visible_status,
-			)
-	else:
-		activity, status = (
-			' ~ ~ Aparentemente, o usuário não está fazendo nada ~ ~ ',
-			'Offline',
-		)
+	presence = mf.getActivityStatus(member)
 
 	message = hikari.Embed(title=f'Atividade de {member.username}')
-	message.add_field('Status', f'```{status}```')
-	message.add_field('Atividade', f'{activity}')
+	message.add_field(name='Status', value=f'```{presence["status"]}```')
+	message.add_field(name='Atividade', value=f'```{presence["activity"]}```', inline=False)
 	await ctx.respond(message)
 
 
@@ -138,7 +90,7 @@ async def cmdServer(ctx: lightbulb.Context) -> None:
 	server = ctx.get_guild()
 	message = hikari.Embed(
 		title=server.name,
-		description=server.description or 'No description or not a Community Guild',
+		description=server.description or 'Nenhuma descrição, ou ',
 	)
 
 	await ctx.respond(message)
@@ -160,15 +112,6 @@ async def serverIcon(ctx: lightbulb.Context) -> None:
 	)
 
 # endregion
-
-
-def getRolesSorted(member: hikari.Member) -> typing.Sequence[hikari.Role]:
-	role_list = member.get_roles()
-	roles_dict = {role.position: role for role in role_list if role.position != 0}
-	roles_sorted = [roles_dict[k] for k in sorted(roles_dict)]
-	return roles_sorted
-
-# TODO Create a findActivity function
 
 def load(bot):
 	print(f'Succesfully loaded {plugin.name}!')
