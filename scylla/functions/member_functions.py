@@ -50,6 +50,3 @@ def getActivityStatus(member: hikari.Member) -> typing.Dict[str, str]:
 	)
 
 	return {'activity':action, 'status':status}
-
-
-# TODO move to 'Functions' folder
