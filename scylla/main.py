@@ -51,6 +51,6 @@ def run() -> None:
 	# 	import uvloop
 	# 	uvloop.install()
 
-	bot.load_extensions_from(".\\scylla\\commands")
-	bot.load_extensions_from(".\\scylla\\auto")
+	bot.load_extensions_from("scylla\\commands")
+	bot.load_extensions_from("scylla\\auto")
 	bot.run(asyncio_debug=True)
