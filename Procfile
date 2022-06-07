@@ -1,2 +1,2 @@
 heroku ps:scale worker 1
-worker: python -m scylla
+worker: python -m start
